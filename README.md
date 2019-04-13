@@ -485,7 +485,7 @@ L'alerte a été journalisée dans /var/log/snort/alert (un log du paquet a éga
 
 ===================================================================
 
-![Ping Alert Received](images/PingReceivedAlert.png)
+![Ping Alert Received](images/PingReceivedAlert.PNG)
 
 ===================================================================
 
