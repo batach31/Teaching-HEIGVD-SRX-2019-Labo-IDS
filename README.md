@@ -289,6 +289,7 @@ alert tcp any any -> any any (msg:"Mon nom!"; content:"Rubinstein"; sid:4000015;
 ---
 
 **Reponse :**  
+La règle envoie une alert (dans /var/log/snort/alerts, et log le paquet dans /var/log/snort) contenant le message "Mon nom !" pour chaque paquet contenant "Rubinstein" est trouvé dans le trafic tcp qui passe par snort. sid et rev, correspondent respectivement à l'identifiant de la règle, et à sa version.
 
 ---
 
@@ -303,6 +304,12 @@ sudo snort -c myrules.rules -i eth0
 ---
 
 **Reponse :**  
+On voit d'abord :
+```
+Commencing packet processing (pid=2624)
+WARNING : no preprocessor configured for policy 0. 
+```
+La dernière ligne étant répetér en boucle. ça signifie que le processus a démarré et est en train de scanner les paquets passants.
 
 ---
 
@@ -313,6 +320,103 @@ Aller à un site web contenant votre nom ou votre mot clé que vous avez choisi 
 ---
 
 **Reponse :**  
+On obtient : 
+```
+^Ĉ*** Caught Int-Signal
+WARNING: No preprocessors configured for policy 0.
+===============================================================================
+Run time for packet processing was 115.48786 seconds
+Snort processed 4695 packets.
+Snort ran for 0 days 0 hours 1 minutes 55 seconds
+   Pkts/min:         4695
+   Pkts/sec:           40
+===============================================================================
+Memory usage summary:
+  Total non-mmapped bytes (arena):       2297856
+  Bytes in mapped regions (hblkhd):      17252352
+  Total allocated space (uordblks):      2071632
+  Total free space (fordblks):           226224
+  Topmost releasable block (keepcost):   69264
+===============================================================================
+Packet I/O Totals:
+   Received:         4732
+   Analyzed:         4695 ( 99.218%)
+    Dropped:            0 (  0.000%)
+   Filtered:            0 (  0.000%)
+Outstanding:           37 (  0.782%)
+   Injected:            0
+===============================================================================
+Breakdown by protocol (includes rebuilt packets):
+        Eth:         4695 (100.000%)
+       VLAN:            0 (  0.000%)
+        IP4:         4668 ( 99.425%)
+       Frag:            0 (  0.000%)
+       ICMP:            0 (  0.000%)
+        UDP:         3908 ( 83.237%)
+        TCP:          744 ( 15.847%)
+        IP6:           19 (  0.405%)
+    IP6 Ext:           38 (  0.809%)
+   IP6 Opts:           19 (  0.405%)
+      Frag6:            0 (  0.000%)
+      ICMP6:           19 (  0.405%)
+       UDP6:            0 (  0.000%)
+       TCP6:            0 (  0.000%)
+     Teredo:            0 (  0.000%)
+    ICMP-IP:            0 (  0.000%)
+    IP4/IP4:            0 (  0.000%)
+    IP4/IP6:            0 (  0.000%)
+    IP6/IP4:            0 (  0.000%)
+    IP6/IP6:            0 (  0.000%)
+        GRE:            0 (  0.000%)
+    GRE Eth:            0 (  0.000%)
+   GRE VLAN:            0 (  0.000%)
+    GRE IP4:            0 (  0.000%)
+    GRE IP6:            0 (  0.000%)
+GRE IP6 Ext:            0 (  0.000%)
+   GRE PPTP:            0 (  0.000%)
+    GRE ARP:            0 (  0.000%)
+    GRE IPX:            0 (  0.000%)
+   GRE Loop:            0 (  0.000%)
+       MPLS:            0 (  0.000%)
+        ARP:            2 (  0.043%)
+        IPX:            0 (  0.000%)
+   Eth Loop:            0 (  0.000%)
+   Eth Disc:            0 (  0.000%)
+   IP4 Disc:            0 (  0.000%)
+   IP6 Disc:            0 (  0.000%)
+   TCP Disc:            0 (  0.000%)
+   UDP Disc:            0 (  0.000%)
+  ICMP Disc:            0 (  0.000%)
+All Discard:            0 (  0.000%)
+      Other:           22 (  0.469%)
+Bad Chk Sum:            0 (  0.000%)
+    Bad TTL:            0 (  0.000%)
+     S5 G 1:            0 (  0.000%)
+     S5 G 2:            0 (  0.000%)
+      Total:         4695
+===============================================================================
+Action Stats:
+     Alerts:            1 (  0.021%)
+     Logged:            1 (  0.021%)
+     Passed:            0 (  0.000%)
+Limits:
+      Match:            0
+      Queue:            0
+        Log:            0
+      Event:            0
+      Alert:            0
+Verdicts:
+      Allow:         4695 ( 99.218%)
+      Block:            0 (  0.000%)
+    Replace:            0 (  0.000%)
+  Whitelist:            0 (  0.000%)
+  Blacklist:            0 (  0.000%)
+     Ignore:            0 (  0.000%)
+      Retry:            0 (  0.000%)
+===============================================================================
+Snort exiting
+```
+On voit qu'une alerte a bien été envoyée.
 
 ---
 
@@ -322,7 +426,23 @@ Aller au répertoire /var/log/snort. Ouvrir le fichier `alert`. Vérifier qu'il 
 
 ---
 
-**Reponse :**  
+**Reponse :**
+L'alerte obtenue ressemble à ça : 
+```
+[**] [1:1000001:1] blah [**]
+[Priority: 0]  04/09-15:29:37.211606 10.192.91.59:55647 -> 193.134.222.245:80
+TCP TTL:128 TOS:0x0 ID:15210 IpLen:20 DgmLen:47 DF
+***AP*** Seq: 0x8436B797  Ack: 0x3B1AE02A  Win: 0xFAF0  TcpLen: 20
+```
+blah => message  affiché selon la règle
+
+Priority: 0 => priorité de la règle
+
+Date heure
+
+adresse et port source et destination
+
+protocole  (tcp)
 
 ---
 
@@ -337,7 +457,13 @@ Ecrire une règle qui journalise (sans alerter) un message à chaque fois que Wi
 
 ---
 
-**Reponse :**  
+**Reponse :** 
+La règkle qu'on a utilisé est la suivante : 
+```log tcp 10.192.91.59 any -> 91.198.174.192 any```
+Le log du paquet a été journalisé, dans /var/log/snort/snort.log.xxxxxxxxxx
+où xxxxxxxxxx représente l'heure à laquelle le monitoring de snort a commencé.
+
+![snort log wikipedia](images/WikipediaSnortLog.PNG)
 
 ---
 
@@ -352,6 +478,190 @@ Ecrire une règle qui alerte à chaque fois que votre système reçoit un ping d
 ---
 
 **Reponse :**  
+La règle est la suivante : 
+```alert icmp any any -> 10.192.91.59 any (msg:"ping recieved";itype:8; sid 400015; rev:1;)```
+Le champs itype:8 des options permet de sélectionner seulement les pings de type ech, ainsi seulement les ping echo entrant créent une alerte.
+L'alerte a été journalisée dans /var/log/snort/alert (un log du paquet a également été créé) : 
+
+===================================================================
+
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+InsererImageIci-----------
+
+===================================================================
+
 
 ---
 
@@ -366,6 +676,10 @@ Modifier votre règle pour que les pings soient détectés dans les deux sens.
 ---
 
 **Reponse :**  
+La règle est à présent la suivante: 
+```alert icmp any any <> 10.192.91.59 any ```
+note : la règle avertira aussi des reply. Pour remédier à ça, et n'avoir que des alert sur les echo, on pourrait faire la règle suivante :
+```alert icmp any any <> 10.192.91.59 any (msg:"ping recieved";itype:8; sid 400015; rev:1;)```
 
 ---
 
@@ -381,6 +695,12 @@ Essayer d'écrire une règle qui Alerte qu'une tentative de session SSH a été 
 ---
 
 **Reponse :**  
+La règle est la suivante : 
+```alert tcp 10.192.105.114 any-> 10.192.91.59 22 (msg:"Connexion SSH";sid:4000015; rev:1;)```
+La règle envoit une alerte dès que la machine voisine (10.192.105.114) tente depuis n'importe lequel de ses port de contacter notre machine via SSH (donc sur le port 22).
+L'alerte obtenue :
+![alerte SSH](/images/SSHAlert.PNG)
+
 
 ---
 
@@ -395,7 +715,8 @@ Lancer Wireshark et faire une capture du trafic sur l'interface connectée au br
 ---
 
 **Reponse :**  
-
+Pour la lecture de pcap, ou log, on utilise : snort -r  nom du fichier
+  
 ---
 
 Utiliser l'option correcte de Snort pour analyser le fichier de capture Wireshark.
@@ -405,6 +726,7 @@ Utiliser l'option correcte de Snort pour analyser le fichier de capture Wireshar
 ---
 
 **Reponse :**  
+Les alertes et les log sont enregistrés comme q'il s'agissait d'une analyse en temps réelle. La date et l'heure des alertes et logs correspondent à leur date réelle (et non a la date de l'analyse)
 
 ---
 
